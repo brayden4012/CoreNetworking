@@ -10,7 +10,7 @@ import Foundation
 
 public protocol RESTNetworkingService {
     var host: URL { get }
-    var accessToken: String? { get set }
+    var headers: [String: String?] { get set }
     func get<Request: NetworkRequest>(_ request: Request) throws -> AnyPublisher<Request.ResponseDomainModel, Error>
     func post<Request: NetworkInputRequest>(_ request: Request) throws -> AnyPublisher<Request.ResponseDomainModel, Error>
     func patch<Request: NetworkInputRequest>(_ request: Request) throws -> AnyPublisher<Request.ResponseDomainModel, Error>

@@ -10,11 +10,22 @@ import Foundation
 
 public class BasicRESTNetworkingService: RESTNetworkingService {
     public let host: URL
-    public var accessToken: String?
+    public var headers: [String: String?]
+    public var persistentQueryItems: [URLQueryItem]?
     
-    public init(host: URL, accessToken: String? = nil) {
+    /// Initializes a BasicRESTNetworkingService
+    /// - Parameters:
+    ///   - host: The host of the REST service you are consuming
+    ///   - headers: Optional dictionary of `HTTPHeaderField` values
+    ///   - persistentQueryItems: Optional `[URLQueryItem]` to specify query items that should be sent with every request (such as an API key)
+    public init(
+        host: URL,
+        headers: [String: String?] = [:],
+        persistentQueryItems: [URLQueryItem]?
+    ) {
         self.host = host
-        self.accessToken = accessToken
+        self.headers = headers
+        self.persistentQueryItems = persistentQueryItems
     }
     
     public func get<Request: NetworkRequest>(_ request: Request) throws -> AnyPublisher<Request.ResponseDomainModel, Error> {
@@ -87,7 +98,7 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
     ) throws -> URLRequest {
         var urlComps = URLComponents(string: host.absoluteString)
         urlComps?.path = path
-        urlComps?.queryItems = queryItems
+        urlComps?.queryItems = (queryItems ?? []) + (persistentQueryItems ?? [])
         guard let url = urlComps?.url else {
             throw URLError(.badURL)
         }
@@ -96,8 +107,8 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
         if let body {
             try request.httpBody = JSONEncoder().encode(body)
         }
-        if let accessToken {
-            request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        for (key, value) in headers {
+            request.setValue(value, forHTTPHeaderField: key)
         }
         return request
     }
