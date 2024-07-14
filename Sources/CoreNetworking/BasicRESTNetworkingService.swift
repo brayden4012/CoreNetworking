@@ -21,7 +21,7 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
     public init(
         host: URL,
         headers: [String: String?] = [:],
-        persistentQueryItems: [URLQueryItem]?
+        persistentQueryItems: [URLQueryItem]? = nil
     ) {
         self.host = host
         self.headers = headers
