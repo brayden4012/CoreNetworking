@@ -5,6 +5,13 @@ import PackageDescription
 
 let package = Package(
     name: "CoreNetworking",
+    platforms: [
+        .iOS(.v12),
+        .macOS(.v13),
+        .tvOS(.v12),
+        .visionOS(.v1),
+        .watchOS(.v4)
+    ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
