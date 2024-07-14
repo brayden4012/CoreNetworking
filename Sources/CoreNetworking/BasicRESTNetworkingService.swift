@@ -12,7 +12,7 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
     public let host: URL
     public var accessToken: String?
     
-    init(host: URL, accessToken: String? = nil) {
+    public init(host: URL, accessToken: String? = nil) {
         self.host = host
         self.accessToken = accessToken
     }
