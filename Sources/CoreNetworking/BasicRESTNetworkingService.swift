@@ -85,11 +85,13 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
         httpMethod: String,
         body: Encodable?
     ) throws -> URLRequest {
-        var request = URLRequest(
-            url: host
-                .appending(path: path)
-                .appending(queryItems: queryItems ?? [])
-        )
+        var urlComps = URLComponents(string: host.absoluteString)
+        urlComps?.path = path
+        urlComps?.queryItems = queryItems
+        guard let url = urlComps?.url else {
+            throw URLError(.badURL)
+        }
+        var request = URLRequest(url: url)
         request.httpMethod = httpMethod
         if let body {
             try request.httpBody = JSONEncoder().encode(body)
