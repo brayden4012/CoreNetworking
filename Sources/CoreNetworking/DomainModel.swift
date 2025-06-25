@@ -8,5 +8,6 @@
 import Foundation
 
 public protocol DomainModel {
-    init?(from networkModel: Decodable) throws
+    associatedtype NetworkModel: Decodable
+    init?(from networkModel: NetworkModel) throws
 }
