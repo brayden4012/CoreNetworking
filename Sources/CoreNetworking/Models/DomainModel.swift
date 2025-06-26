@@ -7,9 +7,9 @@
 
 import Foundation
 
-public protocol DomainModel: Mappable { }
+public protocol DomainModel { }
 
-extension DomainModel {
+extension DomainModel where Self: Mappable {
     func networkModel<NetworkModelType: NetworkModel>(for type: NetworkModelType.Type) throws -> NetworkModelType {
         guard let mapping = Self.mappingsDict[Self.mappingIdentifier(for: type)] else {
             throw NetworkingError.missingMapping(type)

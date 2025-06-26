@@ -9,6 +9,6 @@ import Foundation
 
 public protocol NetworkInputRequest: NetworkRequest {
     associatedtype InputNetworkModel: NetworkModel
-    associatedtype InputDomainModel: DomainModel
+    associatedtype InputDomainModel: MappableDomainModel
     var input: InputDomainModel { get }
 }

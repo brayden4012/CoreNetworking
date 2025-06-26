@@ -28,7 +28,7 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
         self.persistentQueryItems = persistentQueryItems
     }
     
-    public func get<Request: NetworkRequest, Output: DomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError> {
+    public func get<Request: NetworkRequest, Output: MappableDomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError> {
         try dataTask(
             for: try self.request(
                 path: request.path,
@@ -40,7 +40,7 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
         )
     }
     
-    public func post<Request: NetworkInputRequest, Output: DomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError> {
+    public func post<Request: NetworkInputRequest, Output: MappableDomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError> {
         try dataTask(
             for: try self.request(
                 path: request.path,
@@ -52,7 +52,7 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
         )
     }
     
-    public func patch<Request: NetworkInputRequest, Output: DomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError> {
+    public func patch<Request: NetworkInputRequest, Output: MappableDomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError> {
         try dataTask(
             for: try self.request(
                 path: request.path,
@@ -64,7 +64,7 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
         )
     }
     
-    public func put<Request: NetworkInputRequest, Output: DomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError> {
+    public func put<Request: NetworkInputRequest, Output: MappableDomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError> {
         try dataTask(
             for: try self.request(
                 path: request.path,
@@ -76,7 +76,7 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
         )
     }
     
-    public func delete<Request: NetworkRequest, Output: DomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError> {
+    public func delete<Request: NetworkRequest, Output: MappableDomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError> {
         try dataTask(
             for: try self.request(
                 path: request.path,
@@ -111,7 +111,7 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
         return request
     }
     
-    private func dataTask<Request: NetworkRequest, Output: DomainModel>(
+    private func dataTask<Request: NetworkRequest, Output: MappableDomainModel>(
         for request: URLRequest,
         requestType: Request.Type
     ) throws -> AnyPublisher<Output, NetworkingError> {
