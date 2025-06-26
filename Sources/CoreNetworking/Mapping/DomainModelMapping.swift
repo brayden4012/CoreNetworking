@@ -15,7 +15,7 @@ public protocol DomainModelMapping {
     func createNetworkModel(from domainModel: DomainModelType) -> NetworkModelType
 }
 
-extension DomainModelMapping {
+public extension DomainModelMapping {
     func toAnyMapping() -> AnyMapping {
         AnyMapping(self)
     }

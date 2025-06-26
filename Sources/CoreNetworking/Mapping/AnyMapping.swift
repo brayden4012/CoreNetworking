@@ -14,7 +14,7 @@ public class AnyMapping {
     public let networkType: NetworkModel.Type
     public let domainType: DomainModel.Type
 
-    public init<T: DomainModelMappingV2>(
+    public init<T: DomainModelMapping>(
         _ mapping: T
     ) {
         self.networkType = T.NetworkModelType.self
