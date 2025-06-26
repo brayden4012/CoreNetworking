@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class DomainModelMapping: Hashable {
+open class DomainModelMapping: Hashable {
     func networkType() -> NetworkModel.Type {
         fatalError("Must override in subclass")
     }
