@@ -8,6 +8,7 @@
 import Foundation
 
 public protocol NetworkInputRequest: NetworkRequest {
-    associatedtype NetworkModel: Encodable
-    var body: NetworkModel { get }
+    associatedtype InputNetworkModel: NetworkModel
+    associatedtype InputDomainModel: DomainModel
+    var input: InputDomainModel { get }
 }

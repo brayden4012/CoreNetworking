@@ -28,7 +28,7 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
         self.persistentQueryItems = persistentQueryItems
     }
     
-    public func get<Request: NetworkRequest>(_ request: Request) throws -> AnyPublisher<Request.ResponseDomainModel, Error> {
+    public func get<Request: NetworkRequest, Output: DomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError> {
         try dataTask(
             for: try self.request(
                 path: request.path,
@@ -40,45 +40,43 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
         )
     }
     
-    public func post<Request: NetworkInputRequest>(_ request: Request) throws -> AnyPublisher<Request.ResponseDomainModel, Error> {
+    public func post<Request: NetworkInputRequest, Output: DomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError> {
         try dataTask(
             for: try self.request(
                 path: request.path,
                 queryItems: nil,
                 httpMethod: "POST",
-                body: request.body
+                body: try request.input.networkModel(for: Request.InputNetworkModel.self)
             ),
             requestType: Request.self
         )
     }
     
-    public func patch<Request: NetworkInputRequest>(_ request: Request) throws -> AnyPublisher<Request.ResponseDomainModel, Error> {
+    public func patch<Request: NetworkInputRequest, Output: DomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError> {
         try dataTask(
             for: try self.request(
                 path: request.path,
                 queryItems: nil,
                 httpMethod: "PATCH",
-                body: request.body
+                body: try request.input.networkModel(for: Request.InputNetworkModel.self)
             ),
             requestType: Request.self
         )
     }
     
-    public func put<Request: NetworkInputRequest>(_ request: Request) throws -> AnyPublisher<Request.ResponseDomainModel, Error> {
+    public func put<Request: NetworkInputRequest, Output: DomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError> {
         try dataTask(
             for: try self.request(
                 path: request.path,
                 queryItems: nil,
                 httpMethod: "PUT",
-                body: request.body
+                body: try request.input.networkModel(for: Request.InputNetworkModel.self)
             ),
             requestType: Request.self
         )
     }
     
-    public func delete<Request: NetworkRequest>(
-        _ request: Request
-    ) throws -> AnyPublisher<Request.ResponseDomainModel, Error> {
+    public func delete<Request: NetworkRequest, Output: DomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError> {
         try dataTask(
             for: try self.request(
                 path: request.path,
@@ -113,10 +111,10 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
         return request
     }
     
-    private func dataTask<Request: NetworkRequest>(
+    private func dataTask<Request: NetworkRequest, Output: DomainModel>(
         for request: URLRequest,
         requestType: Request.Type
-    ) throws -> AnyPublisher<Request.ResponseDomainModel, Error> {
+    ) throws -> AnyPublisher<Output, NetworkingError> {
         URLSession.shared.dataTaskPublisher(
             for: request
         )
@@ -128,9 +126,19 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
             }
             return element.data
         }
-        .decode(type: Request.ResponseNetworkModel.self, decoder: JSONDecoder())
+        .decode(type: Request.ExpectedResponseType.self, decoder: JSONDecoder())
         .tryCompactMap { networkModel in
-            try Request.ResponseDomainModel(from: networkModel)
+            try Output.create(from: networkModel)
+        }.mapError { error in
+            if let networkingError = error as? NetworkingError {
+                return networkingError
+            } else if let urlError = error as? URLError {
+                return NetworkingError.urlError(urlError)
+            } else if let decodingError = error as? DecodingError {
+                return NetworkingError.decodingError(decodingError)
+            } else {
+                return NetworkingError.other(error)
+            }
         }
         .eraseToAnyPublisher()
     }

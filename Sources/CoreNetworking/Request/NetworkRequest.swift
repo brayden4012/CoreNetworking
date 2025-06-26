@@ -1,5 +1,5 @@
 //
-//  Request.swift
+//  NetworkRequest.swift
 //  CoreNetworking
 //
 //  Created by Brayden Harris on 7/14/24.
@@ -8,8 +8,7 @@
 import Foundation
 
 public protocol NetworkRequest {
-    associatedtype ResponseNetworkModel: Decodable
-    associatedtype ResponseDomainModel: DomainModel
+    associatedtype ExpectedResponseType: NetworkModel
     var path: String { get }
     var queryItems: [URLQueryItem]? { get }
 }

@@ -11,9 +11,9 @@ import Foundation
 public protocol RESTNetworkingService {
     var host: URL { get }
     var headers: [String: String?] { get set }
-    func get<Request: NetworkRequest>(_ request: Request) throws -> AnyPublisher<Request.ResponseDomainModel, Error>
-    func post<Request: NetworkInputRequest>(_ request: Request) throws -> AnyPublisher<Request.ResponseDomainModel, Error>
-    func patch<Request: NetworkInputRequest>(_ request: Request) throws -> AnyPublisher<Request.ResponseDomainModel, Error>
-    func put<Request: NetworkInputRequest>(_ request: Request) throws -> AnyPublisher<Request.ResponseDomainModel, Error>
-    func delete<Request: NetworkRequest>(_ request: Request) throws -> AnyPublisher<Request.ResponseDomainModel, Error>
+    func get<Request: NetworkRequest, Output: DomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError>
+    func post<Request: NetworkInputRequest, Output: DomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError>
+    func patch<Request: NetworkInputRequest, Output: DomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError>
+    func put<Request: NetworkInputRequest, Output: DomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError>
+    func delete<Request: NetworkRequest, Output: DomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError>
 }
