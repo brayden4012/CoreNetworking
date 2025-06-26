@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol DomainModelMappingV2 {
+public protocol DomainModelMapping {
     associatedtype DomainModelType: DomainModel
     associatedtype NetworkModelType: NetworkModel
     
@@ -15,7 +15,7 @@ public protocol DomainModelMappingV2 {
     func createNetworkModel(from domainModel: DomainModelType) -> NetworkModelType
 }
 
-extension DomainModelMappingV2 {
+extension DomainModelMapping {
     func toAnyMapping() -> AnyMapping {
         AnyMapping(self)
     }
