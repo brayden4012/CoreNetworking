@@ -28,7 +28,7 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
         self.persistentQueryItems = persistentQueryItems
     }
     
-    public func get<Request: NetworkRequest, Output: MappableDomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError> {
+    public func get<Request: NetworkRequest>(_ request: Request) throws -> AnyPublisher<Request.ExpectedResponseType, NetworkingError> {
         try dataTask(
             for: try self.request(
                 path: request.path,
@@ -40,7 +40,7 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
         )
     }
     
-    public func post<Request: NetworkInputRequest, Output: MappableDomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError> {
+    public func post<Request: NetworkInputRequest>(_ request: Request) throws -> AnyPublisher<Request.ExpectedResponseType, NetworkingError> {
         try dataTask(
             for: try self.request(
                 path: request.path,
@@ -52,7 +52,7 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
         )
     }
     
-    public func patch<Request: NetworkInputRequest, Output: MappableDomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError> {
+    public func patch<Request: NetworkInputRequest>(_ request: Request) throws -> AnyPublisher<Request.ExpectedResponseType, NetworkingError> {
         try dataTask(
             for: try self.request(
                 path: request.path,
@@ -64,7 +64,7 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
         )
     }
     
-    public func put<Request: NetworkInputRequest, Output: MappableDomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError> {
+    public func put<Request: NetworkInputRequest>(_ request: Request) throws -> AnyPublisher<Request.ExpectedResponseType, NetworkingError> {
         try dataTask(
             for: try self.request(
                 path: request.path,
@@ -76,7 +76,7 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
         )
     }
     
-    public func delete<Request: NetworkRequest, Output: MappableDomainModel>(_ request: Request) throws -> AnyPublisher<Output, NetworkingError> {
+    public func delete<Request: NetworkRequest>(_ request: Request) throws -> AnyPublisher<Request.ExpectedResponseType, NetworkingError> {
         try dataTask(
             for: try self.request(
                 path: request.path,
@@ -111,10 +111,10 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
         return request
     }
     
-    private func dataTask<Request: NetworkRequest, Output: MappableDomainModel>(
+    private func dataTask<Request: NetworkRequest>(
         for request: URLRequest,
         requestType: Request.Type
-    ) throws -> AnyPublisher<Output, NetworkingError> {
+    ) throws -> AnyPublisher<Request.ExpectedResponseType, NetworkingError> {
         URLSession.shared.dataTaskPublisher(
             for: request
         )
@@ -127,9 +127,7 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
             return element.data
         }
         .decode(type: Request.ExpectedResponseType.self, decoder: JSONDecoder())
-        .tryCompactMap { networkModel in
-            try Output.create(from: networkModel)
-        }.mapError { error in
+        .mapError { error in
             if let networkingError = error as? NetworkingError {
                 return networkingError
             } else if let urlError = error as? URLError {
@@ -139,6 +137,20 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
             } else {
                 return NetworkingError.other(error)
             }
+        }
+        .eraseToAnyPublisher()
+    }
+}
+
+public extension AnyPublisher {
+    func mapTo<MappedOutput: MappableDomainModel>(
+        type: MappedOutput.Type
+    ) -> AnyPublisher<MappedOutput, NetworkingError> where Output: NetworkModel, Failure == NetworkingError {
+        tryCompactMap { networkModel in
+            try MappedOutput.create(from: networkModel)
+        }
+        .mapError{ error in
+            error as? NetworkingError ?? NetworkingError.other(error)
         }
         .eraseToAnyPublisher()
     }
