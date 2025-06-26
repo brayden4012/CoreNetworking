@@ -11,10 +11,10 @@ open class DomainModelMapping: Hashable {
     open func networkType() -> NetworkModel.Type {
         fatalError("Must override in subclass")
     }
-    open func create<DomainModelType: DomainModel, NetworkModelType: NetworkModel>(from networkModel: NetworkModelType) -> DomainModelType {
+    open func createDomainModel<DomainModelType: DomainModel, NetworkModelType: NetworkModel>(from networkModel: NetworkModelType) -> DomainModelType {
         fatalError("Must override in subclass")
     }
-    open func toNetworkModel<NetworkModelType: NetworkModel>() -> NetworkModelType {
+    open func createNetworkModel<DomainModelType: DomainModel, NetworkModelType: NetworkModel>(from domainModel: DomainModelType) -> NetworkModelType {
         fatalError("Must override in subclass")
     }
 }

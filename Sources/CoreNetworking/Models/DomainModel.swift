@@ -14,13 +14,13 @@ public extension DomainModel {
         guard let mapping = Self.mappingsDict[ObjectIdentifier(type)] else {
             throw NetworkingError.missingMapping(type)
         }
-        return mapping.toNetworkModel()
+        return mapping.createNetworkModel(from: self)
     }
     
     static func create<NetworkModelType: NetworkModel>(from networkModel: NetworkModelType) throws -> Self {
         guard let mapping = Self.mappingsDict[ObjectIdentifier(NetworkModelType.self)] else {
             throw NetworkingError.missingMapping(type(of: networkModel))
         }
-        return mapping.create(from: networkModel)
+        return mapping.createDomainModel(from: networkModel)
     }
 }
