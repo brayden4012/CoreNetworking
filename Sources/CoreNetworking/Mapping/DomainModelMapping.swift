@@ -7,24 +7,16 @@
 
 import Foundation
 
-open class DomainModelMapping: Hashable {
-    open func networkType() -> NetworkModel.Type {
-        fatalError("Must override in subclass")
-    }
-    open func createDomainModel<DomainModelType: DomainModel, NetworkModelType: NetworkModel>(from networkModel: NetworkModelType) -> DomainModelType {
-        fatalError("Must override in subclass")
-    }
-    open func createNetworkModel<DomainModelType: DomainModel, NetworkModelType: NetworkModel>(from domainModel: DomainModelType) -> NetworkModelType {
-        fatalError("Must override in subclass")
-    }
+public protocol DomainModelMappingV2 {
+    associatedtype DomainModelType: DomainModel
+    associatedtype NetworkModelType: NetworkModel
+    
+    func createDomainModel(from networkModel: NetworkModelType) -> DomainModelType
+    func createNetworkModel(from domainModel: DomainModelType) -> NetworkModelType
 }
 
-public extension DomainModelMapping {
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(String(describing: networkType()))
-    }
-    
-    static func == (lhs: DomainModelMapping, rhs: DomainModelMapping) -> Bool {
-        lhs === rhs
+extension DomainModelMappingV2 {
+    func toAnyMapping() -> AnyMapping {
+        AnyMapping(self)
     }
 }

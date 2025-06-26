@@ -8,13 +8,13 @@
 import Foundation
 
 public protocol Mappable {
-    static var mappings: [DomainModelMapping] { get }
+    static var mappings: [AnyMapping] { get }
 }
 
 internal extension Mappable {
-    static var mappingsDict: [ObjectIdentifier: DomainModelMapping] {
+    static var mappingsDict: [String: AnyMapping] {
         mappings.reduce(into: .init()) { partialResult, mapping in
-            partialResult[ObjectIdentifier(mapping.networkType())] = mapping
+            partialResult[mapping.domainType.mappingIdentifier(for: mapping.networkType)] = mapping
         }
     }
 }

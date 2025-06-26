@@ -11,5 +11,6 @@ public enum NetworkingError: Error {
     case urlError(URLError)
     case decodingError(DecodingError)
     case missingMapping(NetworkModel.Type)
+    case invalidType(NetworkModel.Type)
     case other(Error)
 }
