@@ -12,20 +12,35 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
     public let host: URL
     public var headers: [String: String?]
     public var persistentQueryItems: [URLQueryItem]?
+    private var encoder: JSONEncoder
+    private var decoder: JSONDecoder
+    private var config: URLSessionConfiguration
     
     /// Initializes a BasicRESTNetworkingService
     /// - Parameters:
     ///   - host: The host of the REST service you are consuming
     ///   - headers: Optional dictionary of `HTTPHeaderField` values
     ///   - persistentQueryItems: Optional `[URLQueryItem]` to specify query items that should be sent with every request (such as an API key)
+    ///   - encoder:`JSONEncoder` to use
+    ///   - decoder:`JSONDecoder` to use
+    ///   - config: `URLSessionConfiguration` to use
     public init(
         host: URL,
         headers: [String: String?] = [:],
-        persistentQueryItems: [URLQueryItem]? = nil
+        persistentQueryItems: [URLQueryItem]? = nil,
+        encoder: JSONEncoder = JSONEncoder(),
+        decoder: JSONDecoder = JSONDecoder(),
+        config: URLSessionConfiguration? = nil
     ) {
         self.host = host
         self.headers = headers
         self.persistentQueryItems = persistentQueryItems
+        self.encoder = encoder
+        self.decoder = decoder
+        let defaultConfig = URLSessionConfiguration.default
+        defaultConfig.timeoutIntervalForRequest = 30
+        defaultConfig.requestCachePolicy = .reloadIgnoringLocalCacheData
+        self.config = config ?? defaultConfig
     }
     
     public func get<Request: NetworkRequest>(_ request: Request) throws -> AnyPublisher<Request.ExpectedResponseType, NetworkingError> {
@@ -96,15 +111,19 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
     ) throws -> URLRequest {
         var urlComps = URLComponents(string: host.absoluteString)
         urlComps?.path = path
-        urlComps?.queryItems = (queryItems ?? []) + (persistentQueryItems ?? [])
+        let queryItems = (queryItems ?? []) + (persistentQueryItems ?? [])
+        if !queryItems.isEmpty {
+            urlComps?.queryItems = queryItems
+        }
         guard let url = urlComps?.url else {
             throw URLError(.badURL)
         }
         var request = URLRequest(url: url)
         request.httpMethod = httpMethod
         if let body {
-            try request.httpBody = JSONEncoder().encode(body)
+            try request.httpBody = encoder.encode(body)
         }
+        
         for (key, value) in headers {
             request.setValue(value, forHTTPHeaderField: key)
         }
@@ -115,7 +134,7 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
         for request: URLRequest,
         requestType: Request.Type
     ) throws -> AnyPublisher<Request.ExpectedResponseType, NetworkingError> {
-        URLSession.shared.dataTaskPublisher(
+        URLSession(configuration: config).dataTaskPublisher(
             for: request
         )
         .retry(1)
@@ -126,7 +145,7 @@ public class BasicRESTNetworkingService: RESTNetworkingService {
             }
             return element.data
         }
-        .decode(type: Request.ExpectedResponseType.self, decoder: JSONDecoder())
+        .decode(type: Request.ExpectedResponseType.self, decoder: decoder)
         .mapError { error in
             if let networkingError = error as? NetworkingError {
                 return networkingError
@@ -147,7 +166,7 @@ public extension AnyPublisher {
         type: MappedOutput.Type
     ) -> AnyPublisher<MappedOutput, NetworkingError> where Output: NetworkModel, Failure == NetworkingError {
         tryCompactMap { networkModel in
-            try MappedOutput.create(from: networkModel)
+            try MappedOutput(from: networkModel)
         }
         .mapError{ error in
             error as? NetworkingError ?? NetworkingError.other(error)
